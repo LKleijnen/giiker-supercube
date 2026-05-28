@@ -84,6 +84,7 @@ class TimerTypeMenu(Mode):
     options = [
         ("Fixed scramble (volg algoritme)", "fixed"),
         ("Free scramble (eindig met 4x U)", "free"),
+        ("Scramble herhalen",               "repeat"),
         ("Solves bekijken",                 "browse"),
     ]
 
@@ -100,6 +101,8 @@ class TimerTypeMenu(Mode):
             choice = self.options[self.cursor][1]
             if choice == 'browse':
                 set_mode(SolvesListMode())
+            elif choice == 'repeat':
+                set_mode(RepeatScrambleMenu())
             else:
                 set_mode(TimerMode(choice))
         elif move[0] == 'B':
@@ -132,11 +135,14 @@ class TimerMode(Mode):
         ("Terug naar menu", "back"),
     ]
 
-    def __init__(self, scramble_type):
+    def __init__(self, scramble_type, scramble=None, repeat=False):
         self.scramble_type = scramble_type
+        # repeat=True → bij "Opnieuw" wordt dezelfde scramble herhaald i.p.v.
+        # een nieuwe gegenereerd. Wordt gezet door scramble-herhaal flow.
+        self.repeat = repeat
         if scramble_type == 'fixed':
             self.phase = 'await_solved'
-            self.scramble = generate_scramble(20)
+            self.scramble = list(scramble) if scramble else generate_scramble(20)
         else:
             self.phase = 'await_scramble'
             self.scramble = None
@@ -196,7 +202,10 @@ class TimerMode(Mode):
             elif move[0] == 'F':
                 choice = self.DONE_OPTIONS[self.done_cursor][1]
                 if choice == 'again':
-                    set_mode(TimerMode(self.scramble_type))
+                    if self.repeat:
+                        set_mode(TimerMode(self.scramble_type, scramble=self.scramble, repeat=True))
+                    else:
+                        set_mode(TimerMode(self.scramble_type))
                 elif choice == 'details':
                     set_mode(SolveDetailMode(len(load_solves()) - 1))
                 else:
@@ -443,6 +452,82 @@ def _format_solve_date(ts, fmt="%d-%m %H:%M"):
         return "—"
 
 
+class RepeatScrambleMenu(Mode):
+    """Lijst van eerdere fixed-scrambles om opnieuw te doen."""
+
+    def __init__(self):
+        all_solves = load_solves()
+        # (original_idx, record) voor records die een scramble bewaarden.
+        entries = [(i, r) for i, r in enumerate(all_solves) if r.get('scramble')]
+        entries.reverse()  # nieuwste eerst
+        self.entries = entries
+        self.cursor = 0
+
+    def process(self, state, facelets, faces, move):
+        if not move:
+            return
+        if not self.entries:
+            if move[0] == 'B':
+                set_mode(TimerTypeMenu())
+            return
+        if move[0] == 'U':
+            direction = -1 if "'" in move else 1
+            self.cursor = (self.cursor + direction) % len(self.entries)
+        elif move[0] == 'F':
+            _, record = self.entries[self.cursor]
+            set_mode(TimerMode('fixed', scramble=record['scramble'], repeat=True))
+        elif move[0] == 'B':
+            set_mode(TimerTypeMenu())
+
+    def render(self, facelets):
+        total = len(self.entries)
+        lines = title_bar(f"SCRAMBLE HERHALEN  ({total})") + [""]
+        if not self.entries:
+            lines.append("  (geen herbruikbare scrambles)")
+            lines.append("")
+            lines.append("  Doe eerst een fixed scramble om")
+            lines.append("  hem hier te kunnen herhalen.")
+            lines.append("")
+            lines.append("  [blauw = terug]")
+            lines.append(EXIT_HINT)
+            return side_by_side(lines, render_cube_lines(facelets))
+
+        page = self.cursor // PAGE_SIZE
+        page_start = page * PAGE_SIZE
+        page_end = min(page_start + PAGE_SIZE, total)
+        pages = (total + PAGE_SIZE - 1) // PAGE_SIZE
+
+        for i in range(page_start, page_end):
+            original_idx, r = self.entries[i]
+            num = original_idx + 1
+            date = _format_solve_date(r.get('timestamp'))
+            t = r.get('total')
+            t_str = format_time(t)
+            label = f"#{num:>3}  {date}  {t_str:>7}s"
+            if i == self.cursor:
+                lines.append(f"  > \033[1;36m{label}\033[0m")
+            else:
+                lines.append(f"    {label}")
+
+        for _ in range(PAGE_SIZE - (page_end - page_start)):
+            lines.append("")
+
+        lines.append("")
+        lines.append(f"  [{self.cursor + 1}/{total}]   Pagina {page + 1}/{pages}")
+        lines.append("")
+        lines.append("  [wit = scroll]  [groen = start]")
+        lines.append("  [blauw = terug]")
+        lines.append(EXIT_HINT)
+
+        sel_record = self.entries[self.cursor][1]
+        scrambled = sel_record.get('scrambled_facelets')
+        if scrambled and len(scrambled) == 54:
+            right = ["  \033[1;36mScrambled state:\033[0m", ""] + render_cube_lines(scrambled)
+        else:
+            right = render_cube_lines(facelets)
+        return side_by_side(lines, right)
+
+
 class SolvesListMode(Mode):
     def __init__(self):
         self.solves = load_solves()
@@ -530,7 +615,13 @@ class SolveDetailMode(Mode):
             # U = volgende (nieuwer), U' = vorige (ouder)
             direction = -1 if "'" in move else 1
             self.idx = (self.idx + direction) % len(self.solves)
-        elif move[0] in ('B', 'F'):
+        elif move[0] == 'F':
+            scramble = self.solves[self.idx].get('scramble')
+            if scramble:
+                set_mode(TimerMode('fixed', scramble=scramble, repeat=True))
+            else:
+                set_mode(SolvesListMode())
+        elif move[0] == 'B':
             set_mode(SolvesListMode())
 
     def render(self, facelets):
@@ -616,7 +707,10 @@ class SolveDetailMode(Mode):
             lines.append("  Scramble: (free)")
         lines.append("")
         lines.append("  [U' = vorige]  [U = volgende]")
-        lines.append("  [blauw / groen = terug]")
+        if scramble:
+            lines.append("  [blauw = terug]  [groen = herhaal scramble]")
+        else:
+            lines.append("  [blauw / groen = terug]")
         lines.append(EXIT_HINT)
 
         scrambled = r.get('scrambled_facelets')

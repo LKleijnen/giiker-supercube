@@ -106,7 +106,7 @@ class Mode:
 class MainMenu(Mode):
     options = [
         ("Timer mode", "timer"),
-        ("Snake mode", "snake"),
+        ("Games mode", "games"),
     ]
 
     def __init__(self):
@@ -123,9 +123,9 @@ class MainMenu(Mode):
             if choice == 'timer':
                 from app.timer import TimerTypeMenu
                 set_mode(TimerTypeMenu())
-            elif choice == 'snake':
-                from app.snake import SnakeSizeMenu
-                set_mode(SnakeSizeMenu())
+            elif choice == 'games':
+                from app.games import GamesMenu
+                set_mode(GamesMenu())
 
     def render(self, facelets):
         lines = title_bar("HOOFDMENU") + [""]

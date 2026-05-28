@@ -29,8 +29,8 @@ class SnakeSizeMenu(Mode):
         elif move[0] == 'F':
             set_mode(SnakeItemMenu(self.options[self.cursor][1]))
         elif move[0] == 'B':
-            from app.core import MainMenu
-            set_mode(MainMenu())
+            from app.games import GamesMenu
+            set_mode(GamesMenu())
 
     def render(self, facelets):
         lines = title_bar("SNAKE → SPEELVELD") + [""]
@@ -136,8 +136,8 @@ class SnakeMode(Mode):
                 if choice == 'again':
                     set_mode(SnakeMode((self.width, self.height), self.n_items))
                 else:
-                    from app.core import MainMenu
-                    set_mode(MainMenu())
+                    from app.games import GamesMenu
+                    set_mode(GamesMenu())
             return
         face = move[0]
         if face in self.DIR_MAP:
