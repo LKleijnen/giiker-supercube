@@ -93,6 +93,11 @@ class SnakeMode(Mode):
         'R': ( 1, 0),  # rood = rechts
     }
 
+    DONE_OPTIONS = [
+        ("Opnieuw", "again"),
+        ("Terug naar menu", "back"),
+    ]
+
     def __init__(self, size, n_items):
         self.width, self.height = size
         self.n_items = n_items
@@ -107,6 +112,7 @@ class SnakeMode(Mode):
         self.score = 0
         self.last_tick = time.monotonic()
         self.game_over = False
+        self.done_cursor = 0
 
     def _spawn_items(self):
         tries = 0
@@ -119,7 +125,19 @@ class SnakeMode(Mode):
             self.items.add((x, y))
 
     def process(self, state, facelets, faces, move):
-        if self.game_over or not move:
+        if not move:
+            return
+        if self.game_over:
+            if move[0] == 'U':
+                direction = -1 if "'" in move else 1
+                self.done_cursor = (self.done_cursor + direction) % len(self.DONE_OPTIONS)
+            elif move[0] == 'F':
+                choice = self.DONE_OPTIONS[self.done_cursor][1]
+                if choice == 'again':
+                    set_mode(SnakeMode((self.width, self.height), self.n_items))
+                else:
+                    from app.core import MainMenu
+                    set_mode(MainMenu())
             return
         face = move[0]
         if face in self.DIR_MAP:
@@ -181,5 +199,13 @@ class SnakeMode(Mode):
             lines.append(row)
         lines.append(bot)
         lines.append("")
+        if self.game_over:
+            for i, (label, _) in enumerate(self.DONE_OPTIONS):
+                marker = "  > " if i == self.done_cursor else "    "
+                highlight = "\033[1;36m" if i == self.done_cursor else ""
+                reset = ANSI_RESET if i == self.done_cursor else ""
+                lines.append(f"{marker}{highlight}{label}{reset}")
+            lines.append("")
+            lines.append("  [wit = scroll]  [groen = kies]")
         lines.append(EXIT_HINT)
         return "\n".join(lines)

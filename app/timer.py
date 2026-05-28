@@ -120,6 +120,11 @@ class TimerTypeMenu(Mode):
 class TimerMode(Mode):
     needs_tick = True
 
+    DONE_OPTIONS = [
+        ("Opnieuw", "again"),
+        ("Terug naar menu", "back"),
+    ]
+
     def __init__(self, scramble_type):
         self.scramble_type = scramble_type
         self.phase = 'await_scramble'
@@ -133,6 +138,7 @@ class TimerMode(Mode):
         self.milestones = {'cross': None, 'f2l': None, 'oll': None, 'pll': None}
         self.milestone_moves = {'cross': None, 'f2l': None, 'oll': None, 'pll': None}
         self.solved_at = None
+        self.done_cursor = 0
 
     def process(self, state, facelets, faces, move):
         if self.phase == 'await_scramble':
@@ -158,7 +164,19 @@ class TimerMode(Mode):
                     self.solved_at = elapsed
                     self.phase = 'done'
                     self._save_result()
-        # 'done' phase: alleen exit-gesture werkt (afgevangen door main loop)
+        elif self.phase == 'done':
+            if not move:
+                return
+            if move[0] == 'U':
+                direction = -1 if "'" in move else 1
+                self.done_cursor = (self.done_cursor + direction) % len(self.DONE_OPTIONS)
+            elif move[0] == 'F':
+                choice = self.DONE_OPTIONS[self.done_cursor][1]
+                if choice == 'again':
+                    set_mode(TimerMode(self.scramble_type))
+                else:
+                    from app.core import MainMenu
+                    set_mode(MainMenu())
 
     @staticmethod
     def _qt(move):
@@ -344,5 +362,12 @@ class TimerMode(Mode):
         if not recent:
             lines.append("    (nog geen)")
         lines.append("")
+        for i, (label, _) in enumerate(self.DONE_OPTIONS):
+            marker = "  > " if i == self.done_cursor else "    "
+            highlight = "\033[1;36m" if i == self.done_cursor else ""
+            reset = ANSI_RESET if i == self.done_cursor else ""
+            lines.append(f"{marker}{highlight}{label}{reset}")
+        lines.append("")
+        lines.append("  [wit = scroll]  [groen = kies]")
         lines.append(EXIT_HINT)
         return lines
