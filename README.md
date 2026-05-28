@@ -5,7 +5,7 @@ De cube stuurt na elke zet zijn complete state, en ik render dat als een 2D
 flat-view (kruis-net) in de terminal. Doel is om er straks smart-home triggers
 aan te hangen (lampen aan/uit bij bepaalde patronen of zetten).
 
-![Screenshot van de flat-view in de terminal](screenshot.png)
+![](image.png)
 
 ## Welke cube
 
@@ -128,7 +128,6 @@ de turn-nibble de richting (1=CW, 2=180°, 3=CCW).
   Verander gewoon het MAC-adres en gebruik het apparaat terwijl je luistert.
 - **`capture.log`** — voorbeeld-output van `diagnose.py` waarmee ik het
   protocol heb geverifieerd (per-byte handmatig nagerekend)
-- **`oud/`** — eerdere pogingen + experimenten
 
 ## Eigen acties toevoegen
 
