@@ -1,0 +1,56 @@
+[23:55:47.193] Diagnose gestart. Log -> capture.log
+[23:55:47.197] Scannen naar BLE devices (5 sec)...
+[23:55:52.677] Cube gevonden: name='Hi-G-12DRL00A6EE' rssi=-38
+[23:55:52.680] Verbinden met EA:E6:DE:1E:DD:B3...
+[23:55:57.631] Verbonden: True
+
+[23:55:57.631] === SERVICES & CHARACTERISTICS ===
+  Service: 00001800-0000-1000-8000-00805f9b34fb  (desc: Generic Access Profile)
+    Char: 00002a00-0000-1000-8000-00805f9b34fb  props=[read,write]  handle=2
+      READ -> 48692d472d313244524c303041364545  (len=16, ascii='Hi-G-12DRL00A6EE')
+    Char: 00002a01-0000-1000-8000-00805f9b34fb  props=[read]  handle=4
+      READ -> 0000  (len=2, ascii='..')
+    Char: 00002a04-0000-1000-8000-00805f9b34fb  props=[read]  handle=6
+      READ -> 2000300005005802  (len=8, ascii=' .0...X.')
+    Char: 00002aa6-0000-1000-8000-00805f9b34fb  props=[read]  handle=8
+      READ -> 01  (len=1, ascii='.')
+  Service: 00001801-0000-1000-8000-00805f9b34fb  (desc: Generic Attribute Profile)
+    Char: 00002a05-0000-1000-8000-00805f9b34fb  props=[indicate]  handle=11
+      Descriptor: 00002902-0000-1000-8000-00805f9b34fb
+  Service: 0000180a-0000-1000-8000-00805f9b34fb  (desc: Device Information)
+    Char: 00002a29-0000-1000-8000-00805f9b34fb  props=[read]  handle=15
+      READ -> 4769696b657220496e6e6f766174696f6e20546563686e6f6c6f677920436f2e2c204c74642e  (len=38, ascii='Giiker Innovation Technology Co., Ltd.')
+    Char: 00002a24-0000-1000-8000-00805f9b34fb  props=[read]  handle=17
+      READ -> 4769696b657243756265  (len=10, ascii='GiikerCube')
+    Char: 00002a23-0000-1000-8000-00805f9b34fb  props=[read]  handle=19
+      READ -> ffffff8f03ffffff  (len=8, ascii='........')
+  Service: 0000aadb-0000-1000-8000-00805f9b34fb  (desc: Vendor specific)
+    Char: 0000aadc-0000-1000-8000-00805f9b34fb  props=[read,notify]  handle=22
+      Descriptor: 00002902-0000-1000-8000-00805f9b34fb
+      READ -> 07a619d461211354aba5f83031b896569068a7a5  (len=20, ascii='....a!.T...01..V.h..')
+  Service: 0000aaaa-0000-1000-8000-00805f9b34fb  (desc: Vendor specific)
+    Char: 0000aaab-0000-1000-8000-00805f9b34fb  props=[notify]  handle=26
+      Descriptor: 00002902-0000-1000-8000-00805f9b34fb
+    Char: 0000aaac-0000-1000-8000-00805f9b34fb  props=[write-without-response]  handle=29
+[23:55:57.883] === EINDE DISCOVERY ===
+
+[23:55:57.884] Abonneren op 3 notify-characteristics:
+    - 00002a05-0000-1000-8000-00805f9b34fb
+      start_notify failed: [WinError -2147024891] Toegang geweigerd
+    - 0000aadc-0000-1000-8000-00805f9b34fb
+[23:55:57.918] [00805f9b34fb] len=20 hex=196d7639da103690d8de3ca1454ba457634fa77a  ascii='.mv9..6...<.EK.WcO.z'
+    - 0000aaab-0000-1000-8000-00805f9b34fb
+
+[23:55:57.946] ==> LUISTEREN. Draai nu de cube. Ctrl+C om te stoppen.
+    Tip: doe 1 zet, wacht, dan tegenzet (R, R', U, U', ...).
+    Doe ook 2x exact dezelfde state om te zien of bytes identiek zijn
+    (dat onthult of de data versleuteld is).
+
+[23:56:01.562] [00805f9b34fb] len=20 hex=181d2cb93e77c8156476df895e07dba30922a739  ascii='..,.>w..dv..^....".9'
+[23:56:04.263] [00805f9b34fb] len=20 hex=948360ddc716bbac44d7906119d3b1a20484a792  ascii='..`.....D..a........'
+[23:56:06.962] [00805f9b34fb] len=20 hex=90f2b27c079179193a42a4a2ea8c1e5e973ba7aa  ascii='...|..y.:B.....^.;..'
+[23:56:10.110] [00805f9b34fb] len=20 hex=ed97229dafc0c11f2e86387fb16abcbde1baa767  ascii='..".......8..j.....g'
+[23:56:13.361] [00805f9b34fb] len=20 hex=706f6936b1edd1b5e00264d099a4e8a19d3ea7f1  ascii='poi6......d......>..'
+[23:56:14.214] [00805f9b34fb] len=14 hex=b55b035b00000fc00fc455b1a079  ascii='.[.[......U..y'
+
+[23:56:19.282] Gestopt door gebruiker.
