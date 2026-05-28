@@ -128,6 +128,7 @@ class TimerMode(Mode):
 
     DONE_OPTIONS = [
         ("Opnieuw", "again"),
+        ("Details bekijken", "details"),
         ("Terug naar menu", "back"),
     ]
 
@@ -196,6 +197,8 @@ class TimerMode(Mode):
                 choice = self.DONE_OPTIONS[self.done_cursor][1]
                 if choice == 'again':
                     set_mode(TimerMode(self.scramble_type))
+                elif choice == 'details':
+                    set_mode(SolveDetailMode(len(load_solves()) - 1))
                 else:
                     from app.core import MainMenu
                     set_mode(MainMenu())
